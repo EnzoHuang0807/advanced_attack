@@ -5,8 +5,8 @@ import argparse
 import torchattacks
 from torch.utils.data import DataLoader
 
-from utils import load_model, save_images
-from dataset import CustomImageDataset
+from src.utils import load_model, save_images
+from src.dataset import TargetedDataset
 
 
 model_names = ["resnet110_cifar100", 
@@ -39,13 +39,11 @@ def main():
         os.makedirs(args.output_dir)
 
     # load data 
-    test_dataset = CustomImageDataset(args.input_dir)
-
+    test_dataset = TargetedDataset(args.input_dir)
     test_loader = DataLoader(dataset=test_dataset, batch_size=args.batch_size, shuffle=False)
 
     # ensemble models
-    ensemble_model = load_model(model_names, device)
-    model = ensemble_model.to(device)
+    model = load_model(model_names, device)
 
     # attack
     if args.method == "PGD":
