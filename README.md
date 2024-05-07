@@ -7,7 +7,7 @@ To run the code, simply run `targeted_attack.py` and `universal_attack.py` with 
 
 You can also run `universal_eval.py` for universal attak evaluation
 
-* Example 1 : running targeted attack using PGD with step = 100
+### Example 1 : running targeted attack using PGD with step = 100
 
 ```
 python3 targeted_attack.py --GPU_ID 7 --method PGD --steps 100
@@ -30,7 +30,7 @@ python3 targeted_attack.py --GPU_ID 7 --method PGD --steps 100
   --GPU_ID GPU_ID
 ```
 
-* Example 2 : running universal attack
+### Example 2 : running universal attack
 
 ```
 python3 universal_attack.py --GPU_ID 7 
@@ -59,7 +59,7 @@ python3 universal_attack.py --GPU_ID 7
   --GPU_ID GPU_ID
 ```
 
-* Example 3 : running universal attack evaluation
+### Example 3 : running universal attack evaluation
 
 ```
 python3 universal_eval.py --GPU_ID 7 
