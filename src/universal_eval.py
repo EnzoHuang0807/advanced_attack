@@ -5,8 +5,8 @@ import argparse
 import torchattacks
 from torch.utils.data import DataLoader
 
-from src.utils import load_model
-from src.dataset import UniversalDataset
+from utils import load_model
+from dataset import UniversalDataset
 
 
 model_name = "resnet20_cifar100"
@@ -14,7 +14,7 @@ model_name = "resnet20_cifar100"
 def get_parser():
     parser = argparse.ArgumentParser(description='Generating adversarial examples')
     parser.add_argument('--batch_size', default=100, type=int, help='the bacth size')
-    parser.add_argument('--input_dir', default='./data/images', type=str, help='the path for custom benign images')
+    parser.add_argument('--input_dir', default='../data/images', type=str, help='the path for custom benign images')
     parser.add_argument('--GPU_ID', default='1', type=str)
     return parser.parse_args()
 
@@ -48,8 +48,6 @@ def main():
         correct += (prediction != labels).sum().item()
 
     print('Attack Success Rate on the test images: {} %'.format(100 * correct / total))
-    
-
 
 if __name__ == '__main__':
     main()

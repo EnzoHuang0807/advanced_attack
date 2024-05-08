@@ -1,29 +1,10 @@
 import torch
+from tqdm import tqdm
 import torch.nn as nn
-
-def cal_loss(loader,model,delta,beta,loss_function):
-    loss_total = 0
-    loss_fn = nn.CrossEntropyLoss(reduction='none')
-    delta = delta.cuda()
-    model.eval()
-    with torch.no_grad():
-        for i, data in enumerate(loader):
-            x_val = data[0].cuda()
-            outputs_ori = model(x_val.cuda())
-            _, target_label = torch.max(outputs_ori, 1)
-            perturbed = torch.clamp((x_val + delta), 0, 1)
-            outputs = model(perturbed)
-            if loss_function:
-                loss = torch.mean(loss_fn(outputs, target_label))
-            else:
-                loss = torch.mean(outputs.gather(1, (target_label.cuda()).unsqueeze(1)).squeeze(1))
-            loss_total = loss_total + loss
-    loss_total = loss_total/(i+1)
-    return loss_total
 
 
 def uap_spgd(model, loader, nb_epoch, eps, beta=9, step_decay=0.1, loss_function=None,
-            batch_size = None,loader_eval = None, Momentum=0, uap_init=None, center_crop=32):
+            batch_size = None, Momentum=0, uap_init=None, center_crop=32):
     '''
     INPUT
     model       model
@@ -47,7 +28,6 @@ def uap_spgd(model, loader, nb_epoch, eps, beta=9, step_decay=0.1, loss_function
     else:
         batch_delta = uap_init.unsqueeze(0).repeat([batch_size, 1, 1, 1])
     delta = batch_delta[0]
-    losses = []
     
     # loss function
     if loss_function:
@@ -61,8 +41,7 @@ def uap_spgd(model, loader, nb_epoch, eps, beta=9, step_decay=0.1, loss_function
 
     batch_delta.requires_grad_()
     v = 0
-    for epoch in range(nb_epoch):
-        print('epoch %i/%i' % (epoch + 1, nb_epoch))
+    for epoch in tqdm(range(nb_epoch)):
 
         # perturbation step size with decay
         eps_step = eps * step_decay
@@ -72,7 +51,7 @@ def uap_spgd(model, loader, nb_epoch, eps, beta=9, step_decay=0.1, loss_function
             with torch.no_grad():
                 outputs_ori = model(x_val.cuda())
                 _, target_label = torch.max(outputs_ori, 1)
-            if i > 0 or epoch >0:
+            if i > 0 or epoch > 0:
                 batch_delta.grad.data.zero_()
 
             batch_delta.data = delta.unsqueeze(0).repeat([x_val.shape[0], 1, 1, 1])
@@ -102,7 +81,4 @@ def uap_spgd(model, loader, nb_epoch, eps, beta=9, step_decay=0.1, loss_function
             delta = torch.clamp(delta, -eps, eps)
             batch_delta.grad.data.zero_()
 
-        loss = cal_loss(loader_eval, model, delta.data, beta,loss_function)
-        losses.append(torch.mean(loss.data).cpu())
-
-    return delta.data,losses
+    return delta.data

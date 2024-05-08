@@ -1,4 +1,5 @@
 import os
+import torch
 from torch.utils.data import Dataset
 from torchvision.io import read_image
 
@@ -29,28 +30,35 @@ class TargetedDataset(Dataset):
 
 class UniversalDataset(Dataset):
 
-    def __init__(self, img_dir, eval=False, transform=None, target_transform=None):
+    def __init__(self, img_dir, eval=False, crop=True, transform=None, target_transform=None):
         
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
         self.eval = eval
+        self.crop = crop
 
     def __len__(self):
-        return int(len(os.listdir(self.img_dir)) * (2 / 5))
+
+        if self.crop:
+            return int(len(os.listdir(self.img_dir)) * (2 / 5))
+        else:
+            return len(os.listdir(self.img_dir))
 
     def __getitem__(self, idx):
 
         img_list = os.listdir(self.img_dir)
-        new_img_list = []
-        for img in img_list:
-            if img.split("_")[1] == '0.png' or img.split("_")[1] == '1.png':
-                new_img_list.append(img)
-        img_list = new_img_list
+        if self.crop:
+            new_img_list = []
+            for img in img_list:
+                if img.split("_")[1] == '0.png' or img.split("_")[1] == '1.png':
+                    new_img_list.append(img)
+            img_list = new_img_list
 
         img_path = os.path.join(self.img_dir, img_list[idx])
         image = read_image(img_path).float() / 255
         if self.eval:
+            assert torch.all(read_image("universal.png").float() <= 24)
             image += (read_image("universal.png").float() - 12) / 255
         
         label = int(img_list[idx].split("_")[0])

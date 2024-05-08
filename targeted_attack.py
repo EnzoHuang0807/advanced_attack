@@ -16,6 +16,7 @@ model_names = ["resnet110_cifar100",
                "diaresnet164bn_cifar100"
 ]
 
+
 def get_parser():
     parser = argparse.ArgumentParser(description='Generating adversarial examples')
     parser.add_argument('--batch_size', default=100, type=int, help='the bacth size')
@@ -48,7 +49,7 @@ def main():
     # attack
     if args.method == "PGD":
         attack = torchattacks.PGD(model, eps=args.eps, alpha=args.alpha, steps=args.steps, random_start=True)
-        attack.set_mode_targeted_by_label()
+    attack.set_mode_targeted_by_label()
 
     # evaluation  
     correct = 0
@@ -71,7 +72,7 @@ def main():
         correct += (prediction == labels).sum().item()
 
     print('Attack Success Rate on the test images: {} %'.format(100 * correct / total))
-    with open('results_eval.txt', 'a') as f:
+    with open('targeted_eval.txt', 'a') as f:
             f.write(f"| {args.method} | {int(args.alpha * 255)} | {args.steps} | {100 * correct / total} |\n")
 
 
